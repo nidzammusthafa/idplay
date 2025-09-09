@@ -129,7 +129,6 @@ const Pricing = () => {
       setCurrentIndex((prevIndex) => prevIndex - 1);
     }
   }, [canScrollLeft]);
-  console.log(currentIndex);
 
   const handleNext = () => {
     if (canScrollRight) {

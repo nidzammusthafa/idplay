@@ -1,3 +1,4 @@
+// components/Contact/MapPicker.tsx
 import React, { useEffect, useState, useCallback } from "react";
 import {
   MapContainer,
@@ -10,6 +11,7 @@ import {
 import type { LatLng, Icon } from "leaflet";
 import L from "leaflet";
 import type { Position, Odp } from "../types";
+import SearchBox from "./SearchBox"; // Import SearchBox component
 
 interface MapPickerProps {
   selectedPosition: Position | null;
@@ -110,9 +112,10 @@ const MapPicker: React.FC<MapPickerProps> = ({
 }) => {
   const [allOdpLocations, setAllOdpLocations] = useState<Odp[]>([]);
   const [visibleOdps, setVisibleOdps] = useState<Odp[]>([]);
+  const [searchError, setSearchError] = useState<string | null>(null); // State for search errors
 
   // Center near ODP locations
-  const initialCenter: Position = { lat: -6.464, lng: 107.906 };
+  const initialCenter: Position = { lat: -6.9175, lng: 107.6191 };
   const initialZoom = 15;
 
   useEffect(() => {
@@ -132,42 +135,58 @@ const MapPicker: React.FC<MapPickerProps> = ({
   }, []);
 
   return (
-    <MapContainer
-      center={initialCenter}
-      zoom={initialZoom}
-      scrollWheelZoom={true}
-      className="h-full w-full"
-    >
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
-      <MapClickHandler onLocationSelect={onLocationSelect} />
-      <MapViewUpdater position={selectedPosition} />
-      <MapEventsHandler
-        allOdps={allOdpLocations}
-        setVisibleOdps={setVisibleOdps}
-      />
+    // Wrapper div for positioning the search box relative to the map
+    <div className="relative h-full w-full">
+      <MapContainer
+        center={initialCenter}
+        zoom={initialZoom}
+        scrollWheelZoom={true}
+        className="h-full w-full z-0" // z-0 ensures map is behind other overlays
+      >
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+        <MapClickHandler onLocationSelect={onLocationSelect} />
+        <MapViewUpdater position={selectedPosition} />
+        <MapEventsHandler
+          allOdps={allOdpLocations}
+          setVisibleOdps={setVisibleOdps}
+        />
 
-      {/* User's selected marker */}
-      {selectedPosition && (
-        <Marker position={selectedPosition} icon={userIcon}>
-          <Popup>
-            Lokasi Pilihan Anda <br /> Lat: {selectedPosition.lat.toFixed(6)},
-            Lng: {selectedPosition.lng.toFixed(6)}
-          </Popup>
-        </Marker>
-      )}
+        {/* User's selected marker */}
+        {selectedPosition && (
+          <Marker position={selectedPosition} icon={userIcon}>
+            <Popup>
+              Lokasi Pilihan Anda <br /> Lat: {selectedPosition.lat.toFixed(6)},
+              Lng: {selectedPosition.lng.toFixed(6)}
+            </Popup>
+          </Marker>
+        )}
 
-      {/* Render only visible ODP markers */}
-      {visibleOdps.map((odp, index) => (
-        <Marker key={index} position={odp.center} icon={odpIcon}>
-          <Popup>
-            <b>ODP:</b> {odp.ODP}
-          </Popup>
-        </Marker>
-      ))}
-    </MapContainer>
+        {/* Render only visible ODP markers */}
+        {visibleOdps.map((odp, index) => (
+          <Marker key={index} position={odp.center} icon={odpIcon}>
+            <Popup>
+              <b>ODP:</b> {odp.ODP}
+            </Popup>
+          </Marker>
+        ))}
+      </MapContainer>
+
+      {/* SearchBox positioned over the map */}
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 w-11/12 md:w-2/3 lg:w-1/2">
+        <SearchBox
+          onLocationSelect={onLocationSelect}
+          onError={setSearchError}
+        />
+        {searchError && (
+          <div className="mt-2 p-2 bg-red-100 text-red-700 text-sm rounded-md shadow-sm">
+            {searchError}
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 
