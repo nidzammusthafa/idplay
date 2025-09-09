@@ -15,7 +15,7 @@ const Footer = () => {
             rel="noopener noreferrer"
             className="hover:underline"
           >
-            Your Name
+            Ahmad Nidzam Musthafa
           </a>
         </p>
       </div>

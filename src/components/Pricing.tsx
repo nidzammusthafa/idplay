@@ -131,6 +131,11 @@ const Pricing = () => {
   const checkScrollability = useCallback(() => {
     const container = scrollContainerRef.current;
     if (container) {
+      console.log("Checking scrollability:", {
+        scrollWidth: container.scrollWidth,
+        clientWidth: container.clientWidth,
+        isNowScrollable: container.scrollWidth > container.clientWidth,
+      });
       setIsScrollable(container.scrollWidth > container.clientWidth);
     }
   }, []);
@@ -238,7 +243,7 @@ const Pricing = () => {
           </div>
         </div>
         <div
-          className="relative fade-in-section"
+          className="relative max-w-5xl mx-auto fade-in-section"
           style={{ "--delay": `400ms` } as React.CSSProperties}
         >
           <button

@@ -26,7 +26,7 @@ const getHaversineDistance = (pos1, pos2)=>{
 const CoverageCheckerPanel = ({ selectedPosition })=>{
     _s();
     const [result, setResult] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
-    const [isLoading, setIsLoading] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
+    const [loadingMessage, setLoadingMessage] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
     const [error, setError] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
     const [fullName, setFullName] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
     const [whatsapp, setWhatsapp] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
@@ -38,7 +38,7 @@ const CoverageCheckerPanel = ({ selectedPosition })=>{
             if (selectedPosition) {
                 const checkCoverage = {
                     "CoverageCheckerPanel.useEffect.checkCoverage": async ()=>{
-                        setIsLoading(true);
+                        setLoadingMessage("Menganalisa lokasi Anda...");
                         setResult(null);
                         setError(null);
                         setFullName("");
@@ -63,41 +63,93 @@ const CoverageCheckerPanel = ({ selectedPosition })=>{
                                         if (addressParts.length > 0) {
                                             address = addressParts.join(", ");
                                         } else {
-                                            address = geoData.displayName || address; // Use displayName from our API
+                                            address = geoData.displayName || address;
                                         }
                                     }
                                 }
                             } catch (geoErr) {
-                                console.warn("Could not fetch address from backend, continuing coverage check.", geoErr);
+                                console.warn("Could not fetch address from backend, continuing.", geoErr);
                             }
-                            // --- Step 2: Fetch ODP locations ---
+                            // --- Step 2: Fetch ODP locations and pre-filter by Haversine distance ---
+                            setLoadingMessage("Mencari ODP terdekat...");
                             const odpResponse = await fetch("/odp-locations.json");
                             if (!odpResponse.ok) throw new Error("Could not load ODP data.");
                             const allOdpLocations = await odpResponse.json();
-                            // --- Step 3: Find closest ODP (simplified to Haversine distance) ---
-                            if (allOdpLocations.length === 0) {
-                                throw new Error("Tidak ada data ODP yang tersedia.");
-                            }
-                            const closestOdp = allOdpLocations.map({
-                                "CoverageCheckerPanel.useEffect.checkCoverage.closestOdp": (odp)=>({
+                            const nearbyOdps = allOdpLocations.map({
+                                "CoverageCheckerPanel.useEffect.checkCoverage.nearbyOdps": (odp)=>({
                                         ...odp,
-                                        distance: getHaversineDistance(selectedPosition, odp.center)
+                                        haversineDist: getHaversineDistance(selectedPosition, odp.center)
                                     })
-                            }["CoverageCheckerPanel.useEffect.checkCoverage.closestOdp"]).reduce({
-                                "CoverageCheckerPanel.useEffect.checkCoverage.closestOdp": (prev, curr)=>prev.distance < curr.distance ? prev : curr
-                            }["CoverageCheckerPanel.useEffect.checkCoverage.closestOdp"]);
-                            // --- Step 4: Set Result ---
-                            setResult({
-                                isCovered: closestOdp.distance <= MAX_DISTANCE_METERS,
-                                nearestOdp: closestOdp,
-                                distance: Math.round(closestOdp.distance),
-                                address: address
-                            });
+                            }["CoverageCheckerPanel.useEffect.checkCoverage.nearbyOdps"]).filter({
+                                "CoverageCheckerPanel.useEffect.checkCoverage.nearbyOdps": (odp)=>odp.haversineDist < NEARBY_RADIUS_METERS
+                            }["CoverageCheckerPanel.useEffect.checkCoverage.nearbyOdps"]).sort({
+                                "CoverageCheckerPanel.useEffect.checkCoverage.nearbyOdps": (a, b)=>a.haversineDist - b.haversineDist
+                            }["CoverageCheckerPanel.useEffect.checkCoverage.nearbyOdps"]).slice(0, MAX_ROUTE_CHECKS);
+                            if (nearbyOdps.length === 0) {
+                                if (allOdpLocations.length === 0) {
+                                    throw new Error("Tidak ada data ODP yang tersedia.");
+                                }
+                                // Fallback to closest Haversine if no ODPs are in the wider radius
+                                const closestOdpOverall = allOdpLocations.map({
+                                    "CoverageCheckerPanel.useEffect.checkCoverage.closestOdpOverall": (odp)=>({
+                                            ...odp,
+                                            haversineDist: getHaversineDistance(selectedPosition, odp.center)
+                                        })
+                                }["CoverageCheckerPanel.useEffect.checkCoverage.closestOdpOverall"]).reduce({
+                                    "CoverageCheckerPanel.useEffect.checkCoverage.closestOdpOverall": (prev, curr)=>prev.haversineDist < curr.haversineDist ? prev : curr
+                                }["CoverageCheckerPanel.useEffect.checkCoverage.closestOdpOverall"]);
+                                setResult({
+                                    isCovered: false,
+                                    nearestOdp: closestOdpOverall,
+                                    distance: Math.round(closestOdpOverall.haversineDist),
+                                    address: address
+                                });
+                                setLoadingMessage(null);
+                                return;
+                            }
+                            // --- Step 3: Find nearest by driving distance from the filtered list ---
+                            setLoadingMessage("Menghitung jarak tempuh... (mungkin perlu beberapa saat)");
+                            const routePromises = nearbyOdps.map({
+                                "CoverageCheckerPanel.useEffect.checkCoverage.routePromises": (odp)=>fetch(`/api/route?startLat=${selectedPosition.lat}&startLon=${selectedPosition.lng}&endLat=${odp.center.lat}&endLon=${odp.center.lng}`).then({
+                                        "CoverageCheckerPanel.useEffect.checkCoverage.routePromises": (res)=>res.ok ? res.json() : null
+                                    }["CoverageCheckerPanel.useEffect.checkCoverage.routePromises"]).catch({
+                                        "CoverageCheckerPanel.useEffect.checkCoverage.routePromises": ()=>null
+                                    }["CoverageCheckerPanel.useEffect.checkCoverage.routePromises"])
+                            }["CoverageCheckerPanel.useEffect.checkCoverage.routePromises"]);
+                            const routeResults = await Promise.all(routePromises);
+                            const nearestOdpDriving = routeResults.map({
+                                "CoverageCheckerPanel.useEffect.checkCoverage.nearestOdpDriving": (result, index)=>({
+                                        ...nearbyOdps[index],
+                                        drivingDistance: result?.distance
+                                    })
+                            }["CoverageCheckerPanel.useEffect.checkCoverage.nearestOdpDriving"]).filter({
+                                "CoverageCheckerPanel.useEffect.checkCoverage.nearestOdpDriving": (odp)=>odp.drivingDistance !== null && odp.drivingDistance !== undefined
+                            }["CoverageCheckerPanel.useEffect.checkCoverage.nearestOdpDriving"]).reduce({
+                                "CoverageCheckerPanel.useEffect.checkCoverage.nearestOdpDriving": (prev, curr)=>(prev.drivingDistance ?? Infinity) < (curr.drivingDistance ?? Infinity) ? prev : curr
+                            }["CoverageCheckerPanel.useEffect.checkCoverage.nearestOdpDriving"]);
+                            if (!nearestOdpDriving) {
+                                // Fallback to closest Haversine if all route requests fail
+                                const closestByHaversine = nearbyOdps[0];
+                                setResult({
+                                    isCovered: closestByHaversine.haversineDist <= MAX_DISTANCE_METERS,
+                                    nearestOdp: closestByHaversine,
+                                    distance: Math.round(closestByHaversine.haversineDist),
+                                    address: address
+                                });
+                            } else {
+                                // Set result based on driving distance
+                                setResult({
+                                    isCovered: nearestOdpDriving.drivingDistance <= MAX_DISTANCE_METERS,
+                                    nearestOdp: nearestOdpDriving,
+                                    distance: Math.round(nearestOdpDriving.drivingDistance),
+                                    address: address
+                                });
+                            }
                         } catch (err) {
                             setError(err.message || "An unexpected error occurred.");
                             console.error("Coverage check error:", err);
                         } finally{
-                            setIsLoading(false);
+                            setLoadingMessage(null);
                         }
                     }
                 }["CoverageCheckerPanel.useEffect.checkCoverage"];
@@ -105,7 +157,7 @@ const CoverageCheckerPanel = ({ selectedPosition })=>{
             } else {
                 setResult(null);
                 setError(null);
-                setIsLoading(false);
+                setLoadingMessage(null);
             }
         }
     }["CoverageCheckerPanel.useEffect"], [
@@ -140,7 +192,7 @@ const CoverageCheckerPanel = ({ selectedPosition })=>{
                             children: "Status Jangkauan"
                         }, void 0, false, {
                             fileName: "[project]/src/components/CoverageCheckerPanel.tsx",
-                            lineNumber: 150,
+                            lineNumber: 207,
                             columnNumber: 11
                         }, this),
                         result.isCovered ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -148,20 +200,20 @@ const CoverageCheckerPanel = ({ selectedPosition })=>{
                             children: "✅ Lokasi Terjangkau"
                         }, void 0, false, {
                             fileName: "[project]/src/components/CoverageCheckerPanel.tsx",
-                            lineNumber: 154,
+                            lineNumber: 211,
                             columnNumber: 13
                         }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                             className: "text-2xl font-bold text-red-600",
                             children: "❌ Di Luar Jangkauan"
                         }, void 0, false, {
                             fileName: "[project]/src/components/CoverageCheckerPanel.tsx",
-                            lineNumber: 158,
+                            lineNumber: 215,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/CoverageCheckerPanel.tsx",
-                    lineNumber: 149,
+                    lineNumber: 206,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -171,7 +223,7 @@ const CoverageCheckerPanel = ({ selectedPosition })=>{
                             children: "ODP Terdekat"
                         }, void 0, false, {
                             fileName: "[project]/src/components/CoverageCheckerPanel.tsx",
-                            lineNumber: 164,
+                            lineNumber: 221,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -179,13 +231,13 @@ const CoverageCheckerPanel = ({ selectedPosition })=>{
                             children: result.nearestOdp.ODP
                         }, void 0, false, {
                             fileName: "[project]/src/components/CoverageCheckerPanel.tsx",
-                            lineNumber: 165,
+                            lineNumber: 222,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/CoverageCheckerPanel.tsx",
-                    lineNumber: 163,
+                    lineNumber: 220,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -195,7 +247,7 @@ const CoverageCheckerPanel = ({ selectedPosition })=>{
                             children: "Jarak dari ODP"
                         }, void 0, false, {
                             fileName: "[project]/src/components/CoverageCheckerPanel.tsx",
-                            lineNumber: 168,
+                            lineNumber: 225,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -206,7 +258,7 @@ const CoverageCheckerPanel = ({ selectedPosition })=>{
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/CoverageCheckerPanel.tsx",
-                            lineNumber: 169,
+                            lineNumber: 226,
                             columnNumber: 11
                         }, this),
                         !result.isCovered && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -218,19 +270,19 @@ const CoverageCheckerPanel = ({ selectedPosition })=>{
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/CoverageCheckerPanel.tsx",
-                            lineNumber: 171,
+                            lineNumber: 228,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/CoverageCheckerPanel.tsx",
-                    lineNumber: 167,
+                    lineNumber: 224,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/src/components/CoverageCheckerPanel.tsx",
-            lineNumber: 148,
+            lineNumber: 205,
             columnNumber: 7
         }, this);
     };
@@ -244,7 +296,7 @@ const CoverageCheckerPanel = ({ selectedPosition })=>{
                     children: "Formulir Pendaftaran"
                 }, void 0, false, {
                     fileName: "[project]/src/components/CoverageCheckerPanel.tsx",
-                    lineNumber: 185,
+                    lineNumber: 242,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("form", {
@@ -259,7 +311,7 @@ const CoverageCheckerPanel = ({ selectedPosition })=>{
                                     children: "Nama Lengkap"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/CoverageCheckerPanel.tsx",
-                                    lineNumber: 190,
+                                    lineNumber: 247,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -271,13 +323,13 @@ const CoverageCheckerPanel = ({ selectedPosition })=>{
                                     className: "mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/CoverageCheckerPanel.tsx",
-                                    lineNumber: 196,
+                                    lineNumber: 253,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/CoverageCheckerPanel.tsx",
-                            lineNumber: 189,
+                            lineNumber: 246,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -288,7 +340,7 @@ const CoverageCheckerPanel = ({ selectedPosition })=>{
                                     children: "Nomor WhatsApp"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/CoverageCheckerPanel.tsx",
-                                    lineNumber: 206,
+                                    lineNumber: 263,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -300,13 +352,13 @@ const CoverageCheckerPanel = ({ selectedPosition })=>{
                                     className: "mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/CoverageCheckerPanel.tsx",
-                                    lineNumber: 212,
+                                    lineNumber: 269,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/CoverageCheckerPanel.tsx",
-                            lineNumber: 205,
+                            lineNumber: 262,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -319,7 +371,7 @@ const CoverageCheckerPanel = ({ selectedPosition })=>{
                                             children: "Alamat Lengkap:"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/CoverageCheckerPanel.tsx",
-                                            lineNumber: 223,
+                                            lineNumber: 280,
                                             columnNumber: 15
                                         }, this),
                                         " ",
@@ -328,13 +380,13 @@ const CoverageCheckerPanel = ({ selectedPosition })=>{
                                             children: result.address
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/CoverageCheckerPanel.tsx",
-                                            lineNumber: 226,
+                                            lineNumber: 283,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/CoverageCheckerPanel.tsx",
-                                    lineNumber: 222,
+                                    lineNumber: 279,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -344,7 +396,7 @@ const CoverageCheckerPanel = ({ selectedPosition })=>{
                                             children: "Koordinat:"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/CoverageCheckerPanel.tsx",
-                                            lineNumber: 229,
+                                            lineNumber: 286,
                                             columnNumber: 15
                                         }, this),
                                         " ",
@@ -358,13 +410,13 @@ const CoverageCheckerPanel = ({ selectedPosition })=>{
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/components/CoverageCheckerPanel.tsx",
-                                            lineNumber: 230,
+                                            lineNumber: 287,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/CoverageCheckerPanel.tsx",
-                                    lineNumber: 228,
+                                    lineNumber: 285,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -374,7 +426,7 @@ const CoverageCheckerPanel = ({ selectedPosition })=>{
                                             children: "ODP Terdekat:"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/CoverageCheckerPanel.tsx",
-                                            lineNumber: 236,
+                                            lineNumber: 293,
                                             columnNumber: 15
                                         }, this),
                                         " ",
@@ -383,13 +435,13 @@ const CoverageCheckerPanel = ({ selectedPosition })=>{
                                             children: result.nearestOdp.ODP
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/CoverageCheckerPanel.tsx",
-                                            lineNumber: 239,
+                                            lineNumber: 296,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/CoverageCheckerPanel.tsx",
-                                    lineNumber: 235,
+                                    lineNumber: 292,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -399,7 +451,7 @@ const CoverageCheckerPanel = ({ selectedPosition })=>{
                                             children: "Jarak:"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/CoverageCheckerPanel.tsx",
-                                            lineNumber: 242,
+                                            lineNumber: 299,
                                             columnNumber: 15
                                         }, this),
                                         " ",
@@ -411,19 +463,19 @@ const CoverageCheckerPanel = ({ selectedPosition })=>{
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/components/CoverageCheckerPanel.tsx",
-                                            lineNumber: 243,
+                                            lineNumber: 300,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/CoverageCheckerPanel.tsx",
-                                    lineNumber: 241,
+                                    lineNumber: 298,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/CoverageCheckerPanel.tsx",
-                            lineNumber: 221,
+                            lineNumber: 278,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -432,19 +484,19 @@ const CoverageCheckerPanel = ({ selectedPosition })=>{
                             children: "Daftar Sekarang"
                         }, void 0, false, {
                             fileName: "[project]/src/components/CoverageCheckerPanel.tsx",
-                            lineNumber: 246,
+                            lineNumber: 303,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/CoverageCheckerPanel.tsx",
-                    lineNumber: 188,
+                    lineNumber: 245,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/src/components/CoverageCheckerPanel.tsx",
-            lineNumber: 184,
+            lineNumber: 241,
             columnNumber: 7
         }, this);
     };
@@ -455,7 +507,7 @@ const CoverageCheckerPanel = ({ selectedPosition })=>{
                 children: "Hasil Pengecekan"
             }, void 0, false, {
                 fileName: "[project]/src/components/CoverageCheckerPanel.tsx",
-                lineNumber: 259,
+                lineNumber: 316,
                 columnNumber: 7
             }, this),
             !selectedPosition ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -464,26 +516,26 @@ const CoverageCheckerPanel = ({ selectedPosition })=>{
                     children: "Silakan klik pada peta untuk memilih lokasi instalasi."
                 }, void 0, false, {
                     fileName: "[project]/src/components/CoverageCheckerPanel.tsx",
-                    lineNumber: 264,
+                    lineNumber: 321,
                     columnNumber: 11
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/components/CoverageCheckerPanel.tsx",
-                lineNumber: 263,
+                lineNumber: 320,
                 columnNumber: 9
-            }, this) : isLoading ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+            }, this) : loadingMessage ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                 className: "text-center text-gray-500 py-10",
                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     className: "animate-pulse",
-                    children: "Menganalisa lokasi..."
+                    children: loadingMessage
                 }, void 0, false, {
                     fileName: "[project]/src/components/CoverageCheckerPanel.tsx",
-                    lineNumber: 268,
+                    lineNumber: 325,
                     columnNumber: 11
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/components/CoverageCheckerPanel.tsx",
-                lineNumber: 267,
+                lineNumber: 324,
                 columnNumber: 9
             }, this) : error ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                 className: "text-center text-red-500 bg-red-50 p-4 rounded-lg",
@@ -493,7 +545,7 @@ const CoverageCheckerPanel = ({ selectedPosition })=>{
                             children: "Terjadi Kesalahan:"
                         }, void 0, false, {
                             fileName: "[project]/src/components/CoverageCheckerPanel.tsx",
-                            lineNumber: 273,
+                            lineNumber: 330,
                             columnNumber: 13
                         }, this),
                         " ",
@@ -501,12 +553,12 @@ const CoverageCheckerPanel = ({ selectedPosition })=>{
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/CoverageCheckerPanel.tsx",
-                    lineNumber: 272,
+                    lineNumber: 329,
                     columnNumber: 11
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/components/CoverageCheckerPanel.tsx",
-                lineNumber: 271,
+                lineNumber: 328,
                 columnNumber: 9
             }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
                 children: [
@@ -517,11 +569,11 @@ const CoverageCheckerPanel = ({ selectedPosition })=>{
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/CoverageCheckerPanel.tsx",
-        lineNumber: 258,
+        lineNumber: 315,
         columnNumber: 5
     }, this);
 };
-_s(CoverageCheckerPanel, "V1jqGtMeYklF4pH48eycUTFHT8s=");
+_s(CoverageCheckerPanel, "e4Fmtkj+PAeeG56748/ZsqCHOyY=");
 _c = CoverageCheckerPanel;
 const __TURBOPACK__default__export__ = CoverageCheckerPanel;
 var _c;
@@ -1567,7 +1619,7 @@ const Footer = ()=>{
                             target: "_blank",
                             rel: "noopener noreferrer",
                             className: "hover:underline",
-                            children: "Your Name"
+                            children: "Ahmad Nidzam Musthafa"
                         }, void 0, false, {
                             fileName: "[project]/src/components/Footer.tsx",
                             lineNumber: 12,
@@ -2415,6 +2467,11 @@ const Pricing = ()=>{
         "Pricing.useCallback[checkScrollability]": ()=>{
             const container = scrollContainerRef.current;
             if (container) {
+                console.log("Checking scrollability:", {
+                    scrollWidth: container.scrollWidth,
+                    clientWidth: container.clientWidth,
+                    isNowScrollable: container.scrollWidth > container.clientWidth
+                });
                 setIsScrollable(container.scrollWidth > container.clientWidth);
             }
         }
@@ -2492,7 +2549,7 @@ const Pricing = ()=>{
                             children: "Temukan Paket yang Tepat Untukmu"
                         }, void 0, false, {
                             fileName: "[project]/src/components/Pricing.tsx",
-                            lineNumber: 195,
+                            lineNumber: 200,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2500,13 +2557,13 @@ const Pricing = ()=>{
                             children: "Harga Flat Setiap Bulan, Tanpa Biaya Tersembunyi, dan 100% True Unlimited tanpa FUP (Fair Usage Policy)."
                         }, void 0, false, {
                             fileName: "[project]/src/components/Pricing.tsx",
-                            lineNumber: 198,
+                            lineNumber: 203,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/Pricing.tsx",
-                    lineNumber: 194,
+                    lineNumber: 199,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2523,7 +2580,7 @@ const Pricing = ()=>{
                                 children: "Bulanan"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Pricing.tsx",
-                                lineNumber: 208,
+                                lineNumber: 213,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -2532,7 +2589,7 @@ const Pricing = ()=>{
                                 children: "6 Bulan"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Pricing.tsx",
-                                lineNumber: 218,
+                                lineNumber: 223,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -2541,22 +2598,22 @@ const Pricing = ()=>{
                                 children: "12 Bulan"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Pricing.tsx",
-                                lineNumber: 228,
+                                lineNumber: 233,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/Pricing.tsx",
-                        lineNumber: 207,
+                        lineNumber: 212,
                         columnNumber: 11
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/src/components/Pricing.tsx",
-                    lineNumber: 203,
+                    lineNumber: 208,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                    className: "relative fade-in-section",
+                    className: "relative max-w-5xl mx-auto fade-in-section",
                     style: {
                         "--delay": `400ms`
                     },
@@ -2578,17 +2635,17 @@ const Pricing = ()=>{
                                     d: "M15 19l-7-7 7-7"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/Pricing.tsx",
-                                    lineNumber: 258,
+                                    lineNumber: 263,
                                     columnNumber: 15
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Pricing.tsx",
-                                lineNumber: 251,
+                                lineNumber: 256,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/src/components/Pricing.tsx",
-                            lineNumber: 244,
+                            lineNumber: 249,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2606,17 +2663,17 @@ const Pricing = ()=>{
                                         delay: index * 100
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/Pricing.tsx",
-                                        lineNumber: 279,
+                                        lineNumber: 284,
                                         columnNumber: 17
                                     }, this)
                                 }, plan.speed, false, {
                                     fileName: "[project]/src/components/Pricing.tsx",
-                                    lineNumber: 271,
+                                    lineNumber: 276,
                                     columnNumber: 15
                                 }, this))
                         }, void 0, false, {
                             fileName: "[project]/src/components/Pricing.tsx",
-                            lineNumber: 266,
+                            lineNumber: 271,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -2636,17 +2693,17 @@ const Pricing = ()=>{
                                     d: "M9 5l7 7-7 7"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/Pricing.tsx",
-                                    lineNumber: 301,
+                                    lineNumber: 306,
                                     columnNumber: 15
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Pricing.tsx",
-                                lineNumber: 294,
+                                lineNumber: 299,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/src/components/Pricing.tsx",
-                            lineNumber: 287,
+                            lineNumber: 292,
                             columnNumber: 11
                         }, this),
                         isScrollable && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2662,34 +2719,34 @@ const Pricing = ()=>{
                                     }
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/Pricing.tsx",
-                                    lineNumber: 312,
+                                    lineNumber: 317,
                                     columnNumber: 17
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Pricing.tsx",
-                                lineNumber: 311,
+                                lineNumber: 316,
                                 columnNumber: 15
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/src/components/Pricing.tsx",
-                            lineNumber: 310,
+                            lineNumber: 315,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/Pricing.tsx",
-                    lineNumber: 240,
+                    lineNumber: 245,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/src/components/Pricing.tsx",
-            lineNumber: 193,
+            lineNumber: 198,
             columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "[project]/src/components/Pricing.tsx",
-        lineNumber: 192,
+        lineNumber: 197,
         columnNumber: 5
     }, this);
 };
