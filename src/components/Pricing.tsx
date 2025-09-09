@@ -115,50 +115,105 @@ const Pricing = () => {
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [isScrollable, setIsScrollable] = useState(false);
 
-  // Function to scroll to a specific card
-  const scrollToIndex = (index: number) => {
-    const targetRef = cardRefs.current[index];
-    if (targetRef) {
+  const canScrollLeft = isScrollable && currentIndex > 0;
+  const canScrollRight =
+    isScrollable && currentIndex < PACKAGE_PLANS.length - 1;
+
+  const isProgrammaticScroll = useRef(false);
+  const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  // 1. Handlers to directly set the index
+  const handlePrev = useCallback(() => {
+    if (canScrollLeft) {
+      isProgrammaticScroll.current = true;
+      setCurrentIndex((prevIndex) => prevIndex - 1);
+    }
+  }, [canScrollLeft]);
+  console.log(currentIndex);
+
+  const handleNext = () => {
+    if (canScrollRight) {
+      isProgrammaticScroll.current = true;
+      setCurrentIndex((prevIndex) => prevIndex + 1);
+    }
+  };
+
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    const targetRef = cardRefs.current[currentIndex];
+
+    if (targetRef && container) {
+      container.style.scrollSnapType = "none";
+
       targetRef.scrollIntoView({
         behavior: "smooth",
         block: "nearest",
         inline: "center",
       });
-    }
-  };
 
-  // Check if the container has enough content to be scrollable
+      clearTimeout(scrollTimeout.current as NodeJS.Timeout);
+      scrollTimeout.current = setTimeout(() => {
+        isProgrammaticScroll.current = false;
+        if (container) {
+          // Re-enable scroll-snap for manual interaction.
+          container.style.scrollSnapType = "x mandatory";
+        }
+      }, 1000); // This duration should be longer than the smooth scroll animation.
+    }
+
+    return () => {
+      clearTimeout(scrollTimeout.current as NodeJS.Timeout);
+    };
+  }, [currentIndex]);
+
   const checkScrollability = useCallback(() => {
     const container = scrollContainerRef.current;
     if (container) {
-      console.log("Checking scrollability:", {
-        scrollWidth: container.scrollWidth,
-        clientWidth: container.clientWidth,
-        isNowScrollable: container.scrollWidth > container.clientWidth,
-      });
       setIsScrollable(container.scrollWidth > container.clientWidth);
     }
   }, []);
 
-  // Use IntersectionObserver to find the currently centered card
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (container) {
+      checkScrollability();
+      const resizeObserver = new ResizeObserver(checkScrollability);
+      resizeObserver.observe(container);
+      return () => resizeObserver.disconnect();
+    }
+  }, [checkScrollability]);
+
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
+        if (isProgrammaticScroll.current) {
+          return;
+        }
+
+        let mostVisibleEntry: IntersectionObserverEntry | null = null;
         for (const entry of entries) {
-          if (entry.isIntersecting && entry.intersectionRatio >= 0.7) {
-            const index = cardRefs.current.findIndex(
-              (ref) => ref === entry.target
-            );
-            if (index > -1) {
-              setCurrentIndex(index);
-              return; // Stop after finding the first matching card
+          if (entry.isIntersecting) {
+            if (
+              !mostVisibleEntry ||
+              entry.intersectionRatio > mostVisibleEntry.intersectionRatio
+            ) {
+              mostVisibleEntry = entry;
             }
+          }
+        }
+
+        if (mostVisibleEntry && mostVisibleEntry.intersectionRatio >= 0.7) {
+          const index = cardRefs.current.findIndex(
+            (ref) => ref === mostVisibleEntry.target
+          );
+          if (index > -1) {
+            setCurrentIndex(index);
           }
         }
       },
       {
         root: scrollContainerRef.current,
-        threshold: 0.7, // Card is considered "active" if 70% of it is visible
+        threshold: [0.7, 0.8, 0.9, 1.0], // Trigger more often to get better readings
       }
     );
 
@@ -172,26 +227,12 @@ const Pricing = () => {
         if (ref) observer.unobserve(ref);
       });
     };
-  }, [billingPeriod]);
-
-  // Use ResizeObserver to check scrollability when the container size changes
-  useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (container) {
-      checkScrollability();
-      const resizeObserver = new ResizeObserver(checkScrollability);
-      resizeObserver.observe(container);
-      return () => resizeObserver.disconnect();
-    }
-  }, [checkScrollability]);
+  }, [billingPeriod]); // Re-observe if billing period changes
 
   const scrollProgress =
     PACKAGE_PLANS.length > 1
       ? (currentIndex / (PACKAGE_PLANS.length - 1)) * 100
       : 0;
-  const canScrollLeft = isScrollable && currentIndex > 0;
-  const canScrollRight =
-    isScrollable && currentIndex < PACKAGE_PLANS.length - 1;
 
   return (
     <section id="paket" className="py-20 bg-[#E9ECEF] overflow-hidden">
@@ -247,7 +288,7 @@ const Pricing = () => {
           style={{ "--delay": `400ms` } as React.CSSProperties}
         >
           <button
-            onClick={() => scrollToIndex(currentIndex - 1)}
+            onClick={handlePrev}
             aria-label="Previous package"
             className={`absolute top-1/2 -left-4 z-10 -translate-y-1/2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 transition-opacity duration-300 ${
               canScrollLeft ? "opacity-100" : "opacity-0 pointer-events-none"
@@ -275,7 +316,6 @@ const Pricing = () => {
             {PACKAGE_PLANS.map((plan, index) => (
               <div
                 key={plan.speed}
-                // Fix: ref callback should not return a value. The assignment is wrapped in curly braces to ensure an implicit return of undefined.
                 ref={(el) => {
                   cardRefs.current[index] = el;
                 }}
@@ -290,7 +330,7 @@ const Pricing = () => {
             ))}
           </div>
           <button
-            onClick={() => scrollToIndex(currentIndex + 1)}
+            onClick={handleNext}
             aria-label="Next package"
             className={`absolute top-1/2 -right-4 z-10 -translate-y-1/2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 transition-opacity duration-300 ${
               canScrollRight ? "opacity-100" : "opacity-0 pointer-events-none"

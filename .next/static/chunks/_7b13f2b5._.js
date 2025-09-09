@@ -2534,51 +2534,116 @@ const Pricing = ()=>{
     const scrollContainerRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
     const cardRefs = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])([]);
     const [isScrollable, setIsScrollable] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
-    // Function to scroll to a specific card
-    const scrollToIndex = (index)=>{
-        const targetRef = cardRefs.current[index];
-        if (targetRef) {
-            targetRef.scrollIntoView({
-                behavior: "smooth",
-                block: "nearest",
-                inline: "center"
-            });
+    const canScrollLeft = isScrollable && currentIndex > 0;
+    const canScrollRight = isScrollable && currentIndex < __TURBOPACK__imported__module__$5b$project$5d2f$constants$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["PACKAGE_PLANS"].length - 1;
+    const isProgrammaticScroll = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(false);
+    const scrollTimeout = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
+    // 1. Handlers to directly set the index
+    const handlePrev = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useCallback"])({
+        "Pricing.useCallback[handlePrev]": ()=>{
+            if (canScrollLeft) {
+                isProgrammaticScroll.current = true;
+                setCurrentIndex({
+                    "Pricing.useCallback[handlePrev]": (prevIndex)=>prevIndex - 1
+                }["Pricing.useCallback[handlePrev]"]);
+            }
+        }
+    }["Pricing.useCallback[handlePrev]"], [
+        canScrollLeft
+    ]);
+    console.log(currentIndex);
+    const handleNext = ()=>{
+        if (canScrollRight) {
+            isProgrammaticScroll.current = true;
+            setCurrentIndex((prevIndex)=>prevIndex + 1);
         }
     };
-    // Check if the container has enough content to be scrollable
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
+        "Pricing.useEffect": ()=>{
+            const container = scrollContainerRef.current;
+            const targetRef = cardRefs.current[currentIndex];
+            if (targetRef && container) {
+                container.style.scrollSnapType = "none";
+                targetRef.scrollIntoView({
+                    behavior: "smooth",
+                    block: "nearest",
+                    inline: "center"
+                });
+                clearTimeout(scrollTimeout.current);
+                scrollTimeout.current = setTimeout({
+                    "Pricing.useEffect": ()=>{
+                        isProgrammaticScroll.current = false;
+                        if (container) {
+                            // Re-enable scroll-snap for manual interaction.
+                            container.style.scrollSnapType = "x mandatory";
+                        }
+                    }
+                }["Pricing.useEffect"], 1000); // This duration should be longer than the smooth scroll animation.
+            }
+            return ({
+                "Pricing.useEffect": ()=>{
+                    clearTimeout(scrollTimeout.current);
+                }
+            })["Pricing.useEffect"];
+        }
+    }["Pricing.useEffect"], [
+        currentIndex
+    ]);
     const checkScrollability = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useCallback"])({
         "Pricing.useCallback[checkScrollability]": ()=>{
             const container = scrollContainerRef.current;
             if (container) {
-                console.log("Checking scrollability:", {
-                    scrollWidth: container.scrollWidth,
-                    clientWidth: container.clientWidth,
-                    isNowScrollable: container.scrollWidth > container.clientWidth
-                });
                 setIsScrollable(container.scrollWidth > container.clientWidth);
             }
         }
     }["Pricing.useCallback[checkScrollability]"], []);
-    // Use IntersectionObserver to find the currently centered card
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
+        "Pricing.useEffect": ()=>{
+            const container = scrollContainerRef.current;
+            if (container) {
+                checkScrollability();
+                const resizeObserver = new ResizeObserver(checkScrollability);
+                resizeObserver.observe(container);
+                return ({
+                    "Pricing.useEffect": ()=>resizeObserver.disconnect()
+                })["Pricing.useEffect"];
+            }
+        }
+    }["Pricing.useEffect"], [
+        checkScrollability
+    ]);
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "Pricing.useEffect": ()=>{
             const observer = new IntersectionObserver({
                 "Pricing.useEffect": (entries)=>{
+                    if (isProgrammaticScroll.current) {
+                        return;
+                    }
+                    let mostVisibleEntry = null;
                     for (const entry of entries){
-                        if (entry.isIntersecting && entry.intersectionRatio >= 0.7) {
-                            const index = cardRefs.current.findIndex({
-                                "Pricing.useEffect.index": (ref)=>ref === entry.target
-                            }["Pricing.useEffect.index"]);
-                            if (index > -1) {
-                                setCurrentIndex(index);
-                                return; // Stop after finding the first matching card
+                        if (entry.isIntersecting) {
+                            if (!mostVisibleEntry || entry.intersectionRatio > mostVisibleEntry.intersectionRatio) {
+                                mostVisibleEntry = entry;
                             }
+                        }
+                    }
+                    if (mostVisibleEntry && mostVisibleEntry.intersectionRatio >= 0.7) {
+                        const index = cardRefs.current.findIndex({
+                            "Pricing.useEffect.index": (ref)=>ref === mostVisibleEntry.target
+                        }["Pricing.useEffect.index"]);
+                        if (index > -1) {
+                            setCurrentIndex(index);
                         }
                     }
                 }
             }["Pricing.useEffect"], {
                 root: scrollContainerRef.current,
-                threshold: 0.7
+                threshold: [
+                    0.7,
+                    0.8,
+                    0.9,
+                    1.0
+                ]
             });
             const currentCardRefs = cardRefs.current;
             currentCardRefs.forEach({
@@ -2598,26 +2663,8 @@ const Pricing = ()=>{
         }
     }["Pricing.useEffect"], [
         billingPeriod
-    ]);
-    // Use ResizeObserver to check scrollability when the container size changes
-    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
-        "Pricing.useEffect": ()=>{
-            const container = scrollContainerRef.current;
-            if (container) {
-                checkScrollability();
-                const resizeObserver = new ResizeObserver(checkScrollability);
-                resizeObserver.observe(container);
-                return ({
-                    "Pricing.useEffect": ()=>resizeObserver.disconnect()
-                })["Pricing.useEffect"];
-            }
-        }
-    }["Pricing.useEffect"], [
-        checkScrollability
-    ]);
+    ]); // Re-observe if billing period changes
     const scrollProgress = __TURBOPACK__imported__module__$5b$project$5d2f$constants$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["PACKAGE_PLANS"].length > 1 ? currentIndex / (__TURBOPACK__imported__module__$5b$project$5d2f$constants$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["PACKAGE_PLANS"].length - 1) * 100 : 0;
-    const canScrollLeft = isScrollable && currentIndex > 0;
-    const canScrollRight = isScrollable && currentIndex < __TURBOPACK__imported__module__$5b$project$5d2f$constants$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["PACKAGE_PLANS"].length - 1;
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
         id: "paket",
         className: "py-20 bg-[#E9ECEF] overflow-hidden",
@@ -2632,7 +2679,7 @@ const Pricing = ()=>{
                             children: "Temukan Paket yang Tepat Untukmu"
                         }, void 0, false, {
                             fileName: "[project]/src/components/Pricing.tsx",
-                            lineNumber: 200,
+                            lineNumber: 241,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2640,13 +2687,13 @@ const Pricing = ()=>{
                             children: "Harga Flat Setiap Bulan, Tanpa Biaya Tersembunyi, dan 100% True Unlimited tanpa FUP (Fair Usage Policy)."
                         }, void 0, false, {
                             fileName: "[project]/src/components/Pricing.tsx",
-                            lineNumber: 203,
+                            lineNumber: 244,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/Pricing.tsx",
-                    lineNumber: 199,
+                    lineNumber: 240,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2663,7 +2710,7 @@ const Pricing = ()=>{
                                 children: "Bulanan"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Pricing.tsx",
-                                lineNumber: 213,
+                                lineNumber: 254,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -2672,7 +2719,7 @@ const Pricing = ()=>{
                                 children: "6 Bulan"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Pricing.tsx",
-                                lineNumber: 223,
+                                lineNumber: 264,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -2681,18 +2728,18 @@ const Pricing = ()=>{
                                 children: "12 Bulan"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Pricing.tsx",
-                                lineNumber: 233,
+                                lineNumber: 274,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/Pricing.tsx",
-                        lineNumber: 212,
+                        lineNumber: 253,
                         columnNumber: 11
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/src/components/Pricing.tsx",
-                    lineNumber: 208,
+                    lineNumber: 249,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2702,7 +2749,7 @@ const Pricing = ()=>{
                     },
                     children: [
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                            onClick: ()=>scrollToIndex(currentIndex - 1),
+                            onClick: handlePrev,
                             "aria-label": "Previous package",
                             className: `absolute top-1/2 -left-4 z-10 -translate-y-1/2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 transition-opacity duration-300 ${canScrollLeft ? "opacity-100" : "opacity-0 pointer-events-none"}`,
                             children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
@@ -2718,24 +2765,23 @@ const Pricing = ()=>{
                                     d: "M15 19l-7-7 7-7"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/Pricing.tsx",
-                                    lineNumber: 263,
+                                    lineNumber: 304,
                                     columnNumber: 15
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Pricing.tsx",
-                                lineNumber: 256,
+                                lineNumber: 297,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/src/components/Pricing.tsx",
-                            lineNumber: 249,
+                            lineNumber: 290,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                             ref: scrollContainerRef,
                             className: "flex items-stretch space-x-8 overflow-x-auto pb-8 -mx-6 px-6 scrollbar-hide pt-10 snap-x snap-mandatory",
                             children: __TURBOPACK__imported__module__$5b$project$5d2f$constants$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["PACKAGE_PLANS"].map((plan, index)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                    // Fix: ref callback should not return a value. The assignment is wrapped in curly braces to ensure an implicit return of undefined.
                                     ref: (el)=>{
                                         cardRefs.current[index] = el;
                                     },
@@ -2746,21 +2792,21 @@ const Pricing = ()=>{
                                         delay: index * 100
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/Pricing.tsx",
-                                        lineNumber: 284,
+                                        lineNumber: 324,
                                         columnNumber: 17
                                     }, this)
                                 }, plan.speed, false, {
                                     fileName: "[project]/src/components/Pricing.tsx",
-                                    lineNumber: 276,
+                                    lineNumber: 317,
                                     columnNumber: 15
                                 }, this))
                         }, void 0, false, {
                             fileName: "[project]/src/components/Pricing.tsx",
-                            lineNumber: 271,
+                            lineNumber: 312,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                            onClick: ()=>scrollToIndex(currentIndex + 1),
+                            onClick: handleNext,
                             "aria-label": "Next package",
                             className: `absolute top-1/2 -right-4 z-10 -translate-y-1/2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 transition-opacity duration-300 ${canScrollRight ? "opacity-100" : "opacity-0 pointer-events-none"}`,
                             children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
@@ -2776,17 +2822,17 @@ const Pricing = ()=>{
                                     d: "M9 5l7 7-7 7"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/Pricing.tsx",
-                                    lineNumber: 306,
+                                    lineNumber: 346,
                                     columnNumber: 15
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Pricing.tsx",
-                                lineNumber: 299,
+                                lineNumber: 339,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/src/components/Pricing.tsx",
-                            lineNumber: 292,
+                            lineNumber: 332,
                             columnNumber: 11
                         }, this),
                         isScrollable && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2802,38 +2848,38 @@ const Pricing = ()=>{
                                     }
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/Pricing.tsx",
-                                    lineNumber: 317,
+                                    lineNumber: 357,
                                     columnNumber: 17
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Pricing.tsx",
-                                lineNumber: 316,
+                                lineNumber: 356,
                                 columnNumber: 15
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/src/components/Pricing.tsx",
-                            lineNumber: 315,
+                            lineNumber: 355,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/Pricing.tsx",
-                    lineNumber: 245,
+                    lineNumber: 286,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/src/components/Pricing.tsx",
-            lineNumber: 198,
+            lineNumber: 239,
             columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "[project]/src/components/Pricing.tsx",
-        lineNumber: 197,
+        lineNumber: 238,
         columnNumber: 5
     }, this);
 };
-_s(Pricing, "Mj1qvivtvkDsHQwp5xoecElrHp8=");
+_s(Pricing, "HHdSFprZyYRPnHSh8v21E5N9COw=");
 _c1 = Pricing;
 const __TURBOPACK__default__export__ = Pricing;
 var _c, _c1;
