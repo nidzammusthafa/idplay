@@ -259,11 +259,11 @@ Terima kasih.
             Status Jangkauan
           </h3>
           {result.isCovered ? (
-            <p className="text-2xl font-bold text-green-600">
+            <p className="text-md font-bold text-green-600">
               ✅ Lokasi Terjangkau
             </p>
           ) : (
-            <p className="text-2xl font-bold text-red-600">
+            <p className="text-md font-bold text-red-600">
               ❌ Di Luar Jangkauan
             </p>
           )}
