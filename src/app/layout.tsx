@@ -13,8 +13,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "IdPlay",
-  description: "Internet Cepat & Stabil untuk Semua Kebutuhan Anda",
+  title: "IDPlay - Internet Cepat untuk Warga Jawa Barat",
+  description: "IDPlay menyediakan layanan internet cepat dan stabil untuk seluruh warga Jawa Barat. Cek jangkauan dan nikmati koneksi tanpa batas untuk rumah dan bisnis Anda.",
+  keywords: ["internet provider", "ISP", "Jawa Barat", "Bandung", "Bekasi", "Bogor", "Depok", "Cimahi", "internet cepat", "internet murah", "provider internet terbaik"],
+  authors: [{ name: "IDPlay" }],
+  creator: "IDPlay",
 };
 
 export default function RootLayout({
@@ -25,6 +28,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <meta name="google-site-verification" content="Dw41ieUQGOXF2t48Q4uTretz8oqi4KDqvy44Usvvg4E" />
         <link
           href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;800&family=Inter:wght@400;500;600&display=swap"
           rel="stylesheet"
