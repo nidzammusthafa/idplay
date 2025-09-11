@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://www.idplay.co.id/sitemap.xml
+Sitemap: https://www.idplay.it.id/sitemap.xml
