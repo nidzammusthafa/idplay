@@ -104,12 +104,12 @@ const SearchBox: React.FC<SearchBoxProps> = ({ onLocationSelect, onError }) => {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Cari alamat, kota, atau tempat..."
-            className="w-full px-4 py-3 pl-12 pr-12 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm bg-slate-50/80"
+            className="w-full px-3 py-2 md:px-4 md:py-3 pl-10 md:pl-12 pr-10 md:pr-12 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm bg-slate-50/80 text-sm md:text-base"
             disabled={isLoading}
           />
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <svg
-              className="h-5 w-5 text-gray-400"
+              className="h-4 w-4 md:h-5 md:w-5 text-gray-400"
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 20 20"
               fill="currentColor"

@@ -175,7 +175,7 @@ const MapPicker: React.FC<MapPickerProps> = ({
       </MapContainer>
 
       {/* SearchBox positioned over the map */}
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 w-11/12 md:w-2/3 lg:w-1/2">
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 w-3/4 md:w-2/3 lg:w-1/2">
         <SearchBox
           onLocationSelect={onLocationSelect}
           onError={setSearchError}

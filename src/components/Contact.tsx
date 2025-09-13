@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
 import type { LatLng } from "leaflet";
 import dynamic from "next/dynamic";
 import CoverageCheckerPanel from "./CoverageCheckerPanel";
@@ -19,81 +19,31 @@ const CoverageChecker = () => {
     null
   );
   const [isLocating, setIsLocating] = useState(false);
-  const watchIdRef = useRef<number | null>(null);
 
   const handleLocationSelect = (latlng: LatLng) => {
     setSelectedPosition({ lat: latlng.lat, lng: latlng.lng });
   };
 
-  const stopWatching = () => {
-    if (watchIdRef.current !== null) {
-      navigator.geolocation.clearWatch(watchIdRef.current);
-      watchIdRef.current = null;
-    }
-    setIsLocating(false);
-  };
-
   const handleFindMe = () => {
     setIsLocating(true);
-
-    // Hapus listener sebelumnya jika ada
-    if (watchIdRef.current !== null) {
-      navigator.geolocation.clearWatch(watchIdRef.current);
-    }
-
-    const options: PositionOptions = {
-      enableHighAccuracy: true,
-      timeout: 15000, // Waktu tunggu sedikit lebih lama
-      maximumAge: 0,
-    };
-
-        console.log("Starting location watch with options:", options);
-
-    watchIdRef.current = navigator.geolocation.watchPosition(
+    navigator.geolocation.getCurrentPosition(
       (position) => {
-        console.log("New position received:", {
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-          accuracy: position.coords.accuracy,
-        });
-        const { latitude, longitude, accuracy } = position.coords;
-
-        // Update posisi untuk feedback instan di peta
+        const { latitude, longitude } = position.coords;
         setSelectedPosition({ lat: latitude, lng: longitude });
-
-        // Hentikan pencarian jika akurasi sudah cukup baik (misal < 20 meter)
-        if (accuracy < 20) {
-          console.log(
-            `Accuracy is ${accuracy}m, which is good enough. Stopping watch.`
-          );
-          stopWatching();
-        }
+        setIsLocating(false);
       },
       (error) => {
         console.error("Error getting user location:", error);
-        alert(
-          "Gagal mendapatkan lokasi Anda. Pastikan izin lokasi diaktifkan dan coba lagi."
-        );
-        stopWatching();
+        alert("Gagal mendapatkan lokasi Anda. Pastikan izin lokasi diaktifkan.");
+        setIsLocating(false);
       },
-      options
-    );
-
-    // Hentikan pencarian setelah timeout untuk mencegah proses berjalan selamanya
-    setTimeout(() => {
-      if (isLocating) {
-        stopWatching();
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
       }
-    }, options.timeout);
+    );
   };
-  
-  // Cleanup effect untuk memastikan watchPosition dihentikan saat komponen unmount
-  useEffect(() => {
-    return () => {
-      stopWatching();
-    };
-  }, []);
-
 
   return (
     <section id="kontak" className="py-20 bg-gray-100">

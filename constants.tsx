@@ -28,7 +28,7 @@ export const PACKAGE_PLANS: PackagePlan[] = [
   {
     speed: 15,
     color: "orange",
-    features: ["Ideal untuk browsing & sosial media", "Untuk 1-2 perangkat"],
+    features: ["Ideal untuk browsing & sosial media", "Untuk 3-4 perangkat"],
     prices: {
       monthly: { price: "166.500" },
       sixMonths: { price: "-" },
@@ -38,7 +38,7 @@ export const PACKAGE_PLANS: PackagePlan[] = [
   {
     speed: 20,
     color: "purple",
-    features: ["Streaming HD & WFH lancar", "Untuk 2-3 perangkat"],
+    features: ["Streaming HD & WFH lancar", "Untuk 5-6 perangkat"],
     prices: {
       monthly: { price: "198.690" },
       sixMonths: { price: "165.575", total: "993.450", savings: "198.690" },
@@ -53,7 +53,7 @@ export const PACKAGE_PLANS: PackagePlan[] = [
   {
     speed: 30,
     color: "blue",
-    features: ["Streaming 4K & gaming online", "Untuk 3-5 perangkat"],
+    features: ["Streaming 4K & gaming online", "Untuk 7-10 perangkat"],
     prices: {
       monthly: { price: "265.290" },
       sixMonths: { price: "221.075", total: "1.326.450", savings: "265.290" },
@@ -67,7 +67,7 @@ export const PACKAGE_PLANS: PackagePlan[] = [
   {
     speed: 50,
     color: "green",
-    features: ["Kebutuhan keluarga digital", "Untuk 5-7 perangkat"],
+    features: ["Kebutuhan keluarga digital", "Untuk 12-15 perangkat"],
     prices: {
       monthly: { price: "309.690" },
       sixMonths: { price: "258.075", total: "1.548.450", savings: "309.690" },
@@ -81,7 +81,7 @@ export const PACKAGE_PLANS: PackagePlan[] = [
   {
     speed: 75,
     color: "yellow",
-    features: ["Profesional & kreator konten", "Untuk 7-10 perangkat"],
+    features: ["Profesional & kreator konten", "Untuk 15+ perangkat"],
     prices: {
       monthly: { price: "331.890" },
       sixMonths: { price: "276.575", total: "1.659.450", savings: "331.890" },
@@ -96,7 +96,7 @@ export const PACKAGE_PLANS: PackagePlan[] = [
   {
     speed: 100,
     color: "orange",
-    features: ["Performa maksimal banyak perangkat", "Untuk >10 perangkat"],
+    features: ["Performa maksimal banyak perangkat", "Untuk 15+ perangkat"],
     prices: {
       monthly: { price: "354.090" },
       sixMonths: { price: "295.075", total: "1.770.450", savings: "354.090" },
