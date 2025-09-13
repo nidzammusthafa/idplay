@@ -112,7 +112,8 @@ const MapPicker: React.FC<MapPickerProps> = ({
 }) => {
   const [allOdpLocations, setAllOdpLocations] = useState<Odp[]>([]);
   const [visibleOdps, setVisibleOdps] = useState<Odp[]>([]);
-  const [searchError, setSearchError] = useState<string | null>(null); // State for search errors
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [isSearchVisible, setIsSearchVisible] = useState(false); // State for search visibility
 
   // Center near ODP locations
   const initialCenter: Position = { lat: -6.9175, lng: 107.6191 };
@@ -133,6 +134,12 @@ const MapPicker: React.FC<MapPickerProps> = ({
     };
     fetchOdpData();
   }, []);
+
+  const handleLocationSelect = (latlng: LatLng) => {
+    onLocationSelect(latlng);
+    setIsSearchVisible(false); // Hide search box after selection
+    setSearchError(null); // Clear any previous search errors
+  };
 
   return (
     // Wrapper div for positioning the search box relative to the map
@@ -174,15 +181,39 @@ const MapPicker: React.FC<MapPickerProps> = ({
         ))}
       </MapContainer>
 
-      {/* SearchBox positioned over the map */}
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 w-3/4 md:w-2/3 lg:w-1/2">
-        <SearchBox
-          onLocationSelect={onLocationSelect}
-          onError={setSearchError}
-        />
-        {searchError && (
-          <div className="mt-2 p-2 bg-red-100 text-red-700 text-sm rounded-md shadow-sm">
-            {searchError}
+      {/* Search icon and SearchBox positioned over the map */}
+      <div className="absolute top-4 right-4 z-10 flex flex-col items-end">
+        {!isSearchVisible ? (
+          <button
+            onClick={() => setIsSearchVisible(true)}
+            className="p-1.5 sm:p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors"
+            aria-label="Buka pencarian"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-5 w-5 sm:h-6 sm:w-6"
+            >
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </button>
+        ) : (
+          <div className="w-64 sm:w-80">
+            <SearchBox
+              onLocationSelect={handleLocationSelect}
+              onError={setSearchError}
+            />
+            {searchError && (
+              <div className="mt-2 p-2 bg-red-100 text-red-700 text-sm rounded-md shadow-sm">
+                {searchError}
+              </div>
+            )}
           </div>
         )}
       </div>
