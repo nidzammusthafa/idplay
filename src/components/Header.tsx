@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -25,9 +26,9 @@ const Header = () => {
             </a>
           ))}
         </nav>
-        <a href="#kontak" className="hidden md:inline-block bg-[#ec6210] text-white font-bold py-2 px-6 rounded-lg hover:bg-opacity-90 transition-all duration-300 transform hover:scale-105">
+        <Link href="/cek-jangkauan" className="hidden md:inline-block bg-[#ec6210] text-white font-bold py-2 px-6 rounded-lg hover:bg-opacity-90 transition-all duration-300 transform hover:scale-105">
           Cek Jangkauan Area
-        </a>
+        </Link>
         <div className="md:hidden">
           <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="text-[#212529] focus:outline-none">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -44,9 +45,9 @@ const Header = () => {
                 {link.label}
               </a>
             ))}
-            <a href="#kontak" className="bg-[#ec6210] text-white font-bold py-2 px-6 rounded-lg hover:bg-opacity-90 transition-all duration-300" onClick={() => setIsMenuOpen(false)}>
+            <Link href="/cek-jangkauan" className="bg-[#ec6210] text-white font-bold py-2 px-6 rounded-lg hover:bg-opacity-90 transition-all duration-300" onClick={() => setIsMenuOpen(false)}>
               Cek Jangkauan Area
-            </a>
+            </Link>
           </nav>
         </div>
       )}
