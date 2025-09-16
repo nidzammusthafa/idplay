@@ -62,7 +62,7 @@ const CoverageCheckerPage = () => {
             mendaftar!
           </p>
         </div>
-        <div className="flex flex-col md:flex-row rounded-2xl shadow-2xl overflow-hidden bg-white h-[85vh] max-h-[800px] min-h-[650px]">
+        <div className="flex flex-col md:flex-row rounded-2xl shadow-2xl overflow-hidden bg-white text-gray-900 h-[85vh] max-h-[800px] min-h-[650px]">
           <div className="relative w-full md:w-2/3 h-1/2 md:h-full">
             <MapPicker
               selectedPosition={selectedPosition}

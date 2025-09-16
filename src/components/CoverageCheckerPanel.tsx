@@ -270,11 +270,15 @@ Terima kasih.
         </div>
         <div>
           <h3 className="text-sm font-medium text-gray-500">ODP Terdekat</h3>
-          <p className="text-lg font-semibold">{result.nearestOdp.ODP}</p>
+          <p className="text-lg font-semibold text-gray-800">
+            {result.nearestOdp.ODP}
+          </p>
         </div>
         <div>
           <h3 className="text-sm font-medium text-gray-500">Jarak dari ODP</h3>
-          <p className="text-lg font-semibold">{result.distance} meter</p>
+          <p className="text-lg font-semibold text-gray-800">
+            {result.distance} meter
+          </p>
           {!result.isCovered && (
             <p className="text-sm text-red-500 mt-1">
               Jarak maksimal untuk instalasi adalah {MAX_DISTANCE_METERS} meter.
