@@ -41,7 +41,7 @@ const CoverageCheckerPanel: React.FC<CoverageCheckerPanelProps> = ({
   const [selectedPeriod, setSelectedPeriod] =
     useState<BillingPeriod>("monthly");
 
-  const MAX_DISTANCE_METERS = 250;
+  const MAX_DISTANCE_METERS = 150;
   const NEARBY_RADIUS_METERS = 2000;
   const MAX_ROUTE_CHECKS = 10;
 
