@@ -1,10 +1,28 @@
 // src/app/paket/[slug]/page.tsx
 
 import { notFound } from 'next/navigation';
-import { PACKAGE_PLANS } from '../../../../constants';
+import { PACKAGE_PLANS } from '@/lib/constants';
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
+
+
+
+export async function generateStaticParams() {
+  const periodMap: { [key: string]: string } = {
+    monthly: 'bulanan',
+    sixMonths: 'semesteran',
+    twelveMonths: 'tahunan',
+  };
+
+  return PACKAGE_PLANS.flatMap((plan) => {
+    return (Object.keys(plan.prices) as Array<keyof typeof plan.prices>)
+      .filter(periodKey => plan.prices[periodKey] && plan.prices[periodKey].price !== '-')
+      .map(periodKey => ({
+        slug: `${plan.speed}-mbps-${periodMap[periodKey]}`,
+      }));
+  });
+}
 
 // Helper function to parse slug
 const parseSlug = (slug: string) => {
@@ -90,8 +108,17 @@ const getIdealUsageContent = (speed: number) => {
 
 
 // Dynamic Metadata for SEO
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const details = getPackageDetails(params.slug);
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+
+  if (!slug) {
+    return {
+      title: "Halaman Tidak Ditemukan",
+      description: "Halaman yang Anda cari tidak tersedia.",
+    };
+  }
+
+  const details = getPackageDetails(slug);
 
   if (!details) {
     return {
@@ -119,7 +146,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     openGraph: {
       title,
       description,
-      url: `https://www.idplay.it.com/paket/${params.slug}`,
+      url: `https://www.idplay.it.com/paket/${slug}`,
       images: [{ url: imageUrl, width: 1200, height: 630, alt: title }],
       siteName: 'IDPlay',
     },
@@ -133,8 +160,14 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 }
 
 // The Page Component
-export default function PaketPage({ params }: { params: { slug: string } }) {
-  const details = getPackageDetails(params.slug);
+export default async function PaketPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+
+  if (!slug) {
+    notFound();
+  }
+
+  const details = getPackageDetails(slug);
 
   if (!details) {
     notFound();

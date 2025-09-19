@@ -15,7 +15,7 @@ import {
   Testimonial,
   FaqItem,
   InstallationStep,
-} from "../types";
+} from "@/types";
 
 export const HERO_SLIDES: string[] = [
   "TRUE UNLIMITED - Tanpa Kuota, Tanpa FUP.",
