@@ -149,8 +149,8 @@ export async function generateMetadata({
   }
 
   const { speed, period, priceInfo } = details;
-  const periodText = period.charAt(0).toUpperCase() + period.slice(1);
-  const title = `Paket Internet ${speed} Mbps ${periodText} - IDPlay`;
+  const periodText = period.charAt(0).toUpperCase();
+  const title = `Paket Internet ${speed} Mbps ${periodText} Rp ${priceInfo.price}/bulan - IDPlay`;
   const description = `Daftar paket internet IDPlay ${speed} Mbps dengan pembayaran ${period.toLowerCase()} seharga Rp ${
     priceInfo.price
   }/bulan. Nikmati koneksi super cepat dan stabil.`;
@@ -161,9 +161,10 @@ export async function generateMetadata({
     tahunan: "tahun",
   };
   const imageName = `${speed}${periodToImageName[period]}.webp`;
-  const imageUrl = `https://www.idplay.it.com/${imageName}`
+  const imageUrl = `https://www.idplay.it.com/${imageName}`;
 
-  return {    metadataBase: new URL("https://www.idplay.it.com"),
+  return {
+    metadataBase: new URL("https://www.idplay.it.com"),
     title,
     description,
     openGraph: {
