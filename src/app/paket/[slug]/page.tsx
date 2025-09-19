@@ -1,8 +1,5 @@
-// src/app/paket/[slug]/page.tsx
-
 import { notFound } from "next/navigation";
 import { PACKAGE_PLANS } from "@/lib/constants";
-import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -131,9 +128,9 @@ const getIdealUsageContent = (speed: number) => {
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
-  const slug = params.slug;
+  const { slug } = await params;
 
   if (!slug) {
     return {
@@ -167,12 +164,13 @@ export async function generateMetadata({
   const imageUrl = `https://www.idplay.it.com/${imageName}`;
 
   return {
+    metadataBase: new URL("https://www.idplay.it.com"),
     title,
     description,
     openGraph: {
       title,
       description,
-      url: `https://www.idplay.it.com/paket/${params.slug}`,
+      url: `https://www.idplay.it.com/paket/${slug}`,
       images: [{ url: imageUrl, width: 1200, height: 630, alt: title }],
       siteName: "IDPlay",
     },
@@ -186,8 +184,12 @@ export async function generateMetadata({
 }
 
 // The Page Component
-export default function PaketPage({ params }: { params: { slug: string } }) {
-  const slug = params.slug;
+export default async function PaketPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
 
   if (!slug) {
     notFound();
