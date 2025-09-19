@@ -46,7 +46,7 @@ const Testimonials = () => {
               >
                 <div className="bg-white p-8 rounded-2xl shadow-lg flex flex-col justify-center items-center text-center h-full">
                   <p className="text-gray-700 italic text-lg">
-                    "{testimonial.quote}"
+                    &quot;{testimonial.quote}&quot;
                   </p>
                   <div className="mt-6">
                     <p className="font-bold text-lg text-[#212529]">

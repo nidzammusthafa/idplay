@@ -1,4 +1,3 @@
-// app/api/search/route.ts (Content from your provided route.ts that handles 'q')
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
