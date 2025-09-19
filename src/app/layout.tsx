@@ -26,6 +26,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.idplay.it.com"),
   title: "IDPlay - Internet Cepat untuk Warga Jawa Barat",
   description:
     "IDPlay menyediakan layanan internet cepat dan stabil untuk seluruh warga Jawa Barat. Cek jangkauan dan nikmati koneksi tanpa batas untuk rumah dan bisnis Anda.",
@@ -63,6 +64,19 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "IDPlay" }],
   creator: "IDPlay",
+  openGraph: {
+    type: "website",
+    url: "https://www.idplay.it.com/",
+    title: "IDPlay - Internet Cepat untuk Warga Jawa Barat",
+    description: "Layanan internet cepat dan stabil untuk seluruh warga Jawa Barat. Cek jangkauan dan nikmati koneksi tanpa batas.",
+    images: "/cek-jangkauan.png",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "IDPlay - Internet Cepat untuk Warga Jawa Barat",
+    description: "Layanan internet cepat dan stabil untuk seluruh warga Jawa Barat. Cek jangkauan dan nikmati koneksi tanpa batas.",
+    images: "/cek-jangkauan.png",
+  },
 };
 
 export default function RootLayout({
@@ -75,19 +89,7 @@ export default function RootLayout({
       <head>
         <meta name="google-site-verification" content="Dw41ieUQGOXF2t48Q4uTretz8oqi4KDqvy44Usvvg4E" />
         
-        {/* Open Graph / Facebook */}
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://www.idplay.it.com/" />
-        <meta property="og:title" content="IDPlay - Internet Cepat untuk Warga Jawa Barat" />
-        <meta property="og:description" content="Layanan internet cepat dan stabil untuk seluruh warga Jawa Barat. Cek jangkauan dan nikmati koneksi tanpa batas." />
-        <meta property="og:image" content="https://www.idplay.it.com/cek-jangkauan.png" />
 
-        {/* Twitter */}
-        <meta property="twitter:card" content="summary_large_image" />
-        <meta property="twitter:url" content="https://www.idplay.it.com/" />
-        <meta property="twitter:title" content="IDPlay - Internet Cepat untuk Warga Jawa Barat" />
-        <meta property="twitter:description" content="Layanan internet cepat dan stabil untuk seluruh warga Jawa Barat. Cek jangkauan dan nikmati koneksi tanpa batas." />
-        <meta property="twitter:image" content="https://www.idplay.it.com/cek-jangkauan.png" />
 
         <script
           type="application/ld+json"
