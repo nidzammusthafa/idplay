@@ -68,14 +68,16 @@ export const metadata: Metadata = {
     type: "website",
     url: "https://www.idplay.it.com/",
     title: "IDPlay - Internet Cepat untuk Warga Jawa Barat",
-    description: "Layanan internet cepat dan stabil untuk seluruh warga Jawa Barat. Cek jangkauan dan nikmati koneksi tanpa batas.",
-    images: "/cek-jangkauan.png",
+    description:
+      "Layanan internet cepat dan stabil untuk seluruh warga Jawa Barat. Cek jangkauan dan nikmati koneksi tanpa batas.",
+    images: "/cek-jangkauan.webp",
   },
   twitter: {
     card: "summary_large_image",
     title: "IDPlay - Internet Cepat untuk Warga Jawa Barat",
-    description: "Layanan internet cepat dan stabil untuk seluruh warga Jawa Barat. Cek jangkauan dan nikmati koneksi tanpa batas.",
-    images: "/cek-jangkauan.png",
+    description:
+      "Layanan internet cepat dan stabil untuk seluruh warga Jawa Barat. Cek jangkauan dan nikmati koneksi tanpa batas.",
+    images: "/cek-jangkauan.webp",
   },
 };
 
@@ -87,38 +89,42 @@ export default function RootLayout({
   return (
     <html lang="id">
       <head>
-        <meta name="google-site-verification" content="Dw41ieUQGOXF2t48Q4uTretz8oqi4KDqvy44Usvvg4E" />
-        
-
+        <meta
+          name="google-site-verification"
+          content="Dw41ieUQGOXF2t48Q4uTretz8oqi4KDqvy44Usvvg4E"
+        />
 
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "InternetServiceProvider",
-            "name": "IDPlay",
-            "url": "https://www.idplay.it.com/",
-            "logo": "https://www.idplay.it.com/favicon.ico",
-            "image": "https://www.idplay.it.com/cek-jangkauan.png",
-            "description": "IDPlay menyediakan layanan internet cepat dan stabil untuk seluruh warga Jawa Barat. Cek jangkauan dan nikmati koneksi tanpa batas untuk rumah dan bisnis Anda.",
-            "address": {
-              "@type": "PostalAddress",
-              "streetAddress": "Jl. Telekomunikasi No. 1",
-              "addressLocality": "Bandung",
-              "addressRegion": "Jawa Barat",
-              "postalCode": "40257",
-              "addressCountry": "ID"
-            },
-            "contactPoint": {
-              "@type": "ContactPoint",
-              "telephone": "+62-812-3456-7890",
-              "contactType": "Customer Service"
-            },
-            "areaServed": {
-              "@type": "State",
-              "name": "Jawa Barat"
-            }
-          }) }}
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "InternetServiceProvider",
+              name: "IDPlay",
+              url: "https://www.idplay.it.com/",
+              logo: "https://www.idplay.it.com/favicon.ico",
+              image: "https://www.idplay.it.com/cek-jangkauan.webp",
+              description:
+                "IDPlay menyediakan layanan internet cepat dan stabil untuk seluruh warga Jawa Barat. Cek jangkauan dan nikmati koneksi tanpa batas untuk rumah dan bisnis Anda.",
+              address: {
+                "@type": "PostalAddress",
+                streetAddress: "Jl. Telekomunikasi No. 1",
+                addressLocality: "Bandung",
+                addressRegion: "Jawa Barat",
+                postalCode: "40257",
+                addressCountry: "ID",
+              },
+              contactPoint: {
+                "@type": "ContactPoint",
+                telephone: "+62-812-3456-7890",
+                contactType: "Customer Service",
+              },
+              areaServed: {
+                "@type": "State",
+                name: "Jawa Barat",
+              },
+            }),
+          }}
         />
 
         <link

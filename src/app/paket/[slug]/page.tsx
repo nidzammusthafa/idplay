@@ -160,11 +160,10 @@ export async function generateMetadata({
     semesteran: "semester",
     tahunan: "tahun",
   };
-  const imageName = `${speed}${periodToImageName[period]}.png`;
-  const imageUrl = `https://www.idplay.it.com/${imageName}`;
+  const imageName = `${speed}${periodToImageName[period]}.webp`;
+  const imageUrl = `https://www.idplay.it.com/${imageName}`
 
-  return {
-    metadataBase: new URL("https://www.idplay.it.com"),
+  return {    metadataBase: new URL("https://www.idplay.it.com"),
     title,
     description,
     openGraph: {
@@ -215,7 +214,7 @@ export default async function PaketPage({
     semesteran: "semester",
     tahunan: "tahun",
   };
-  const imageName = `${speed}${periodToImageName[period]}.png`;
+  const imageName = `${speed}${periodToImageName[period]}.webp`;
   const finalImageUrl = `/${imageName}`;
 
   return (

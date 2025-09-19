@@ -138,7 +138,7 @@ export default function HargaPage() {
           </h2>
           <div className="max-w-2xl mx-auto rounded-lg overflow-hidden shadow-2xl">
             <Image
-              src="/price-list.png"
+              src="/price-list.webp"
               alt="Daftar harga paket internet IDPlay"
               width={800}
               height={1131}
