@@ -149,8 +149,8 @@ export async function generateMetadata({
   }
 
   const { speed, period, priceInfo } = details;
-  const periodText = period.charAt(0).toUpperCase();
-  const title = `Paket Internet ${speed} Mbps ${periodText} Rp ${priceInfo.price}/bulan - IDPlay`;
+  const periodText = period.charAt(0).toUpperCase() + period.slice(1);
+  const title = `Paket Internet ${speed} Mbps Rp. ${priceInfo.price}/bulan - ${periodText} - IDPlay`;
   const description = `Daftar paket internet IDPlay ${speed} Mbps dengan pembayaran ${period.toLowerCase()} seharga Rp ${
     priceInfo.price
   }/bulan. Nikmati koneksi super cepat dan stabil.`;
