@@ -33,6 +33,7 @@ const CoverageCheckerPanel: React.FC<CoverageCheckerPanelProps> = ({
   // Form states
   const [fullName, setFullName] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
+  const [email, setEmail] = useState("");
   const [selectedPlanSpeed, setSelectedPlanSpeed] = useState<number>(
     () =>
       PACKAGE_PLANS.find((p) => p.prices.monthly.price !== "-")?.speed ||
@@ -53,6 +54,7 @@ const CoverageCheckerPanel: React.FC<CoverageCheckerPanelProps> = ({
         setError(null);
         setFullName("");
         setWhatsapp("");
+        setEmail("");
 
         try {
           let address = `Lat: ${selectedPosition.lat.toFixed(
@@ -223,6 +225,7 @@ Dengan hormat, saya mengajukan permohonan pendaftaran layanan internet IdPlay de
 -----------------------------------
 *Nama Lengkap:* ${fullName}
 *Nomor WhatsApp:* ${whatsapp}
+*Email:* ${email}
 *Alamat Lengkap:* ${result.address}
 *Koordinat:* ${selectedPosition.lat.toFixed(5)}, ${selectedPosition.lng.toFixed(
       5
@@ -332,6 +335,22 @@ Terima kasih.
               id="whatsapp"
               value={whatsapp}
               onChange={(e) => setWhatsapp(e.target.value)}
+              required
+              className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Email
+            </label>
+            <input
+              type="email"
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
               className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             />
