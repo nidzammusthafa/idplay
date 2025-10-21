@@ -15,6 +15,7 @@ export interface PackagePrices {
 
 export interface PackagePlan {
   speed: number;
+  originalSpeed?: number;
   color: string;
   features: string[];
   prices: PackagePrices;
