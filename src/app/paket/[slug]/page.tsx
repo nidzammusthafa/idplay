@@ -263,7 +263,7 @@ export default async function PaketPage({
             <div className="bg-white p-6 rounded-lg shadow-md mt-4">
               <div className="flex justify-between items-baseline">
                 <span className="text-gray-500">Harga per bulan</span>
-                <p className="text-4xl font-bold text-gray-800">
+                <p className="text-3xl md:text-4xl font-bold text-gray-800">
                   Rp {priceInfo.price}
                 </p>
               </div>

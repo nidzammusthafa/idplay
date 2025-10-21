@@ -92,7 +92,7 @@ export default function HargaPage() {
                     </div>
                   )}
                   <div className="mb-6">
-                    <p className="text-4xl font-extrabold text-gray-800">
+                    <p className="text-3xl md:text-4xl font-extrabold text-gray-800">
                       {plan.speed}{" "}
                       <span className="text-2xl font-bold text-gray-500">
                         Mbps

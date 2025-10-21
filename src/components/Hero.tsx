@@ -26,7 +26,7 @@ const Hero = () => {
       </div>
 
       <div className="container mx-auto px-6 text-center relative z-10">
-        <div className="h-16 flex items-center justify-center overflow-hidden mb-4 fade-in-section">
+        <div className="h-24 flex items-center justify-center overflow-hidden mb-4 fade-in-section">
           {HERO_SLIDES.map((slide, index) => (
             <div
               key={index}

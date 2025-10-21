@@ -34,7 +34,7 @@ const PriceCard: React.FC<{
   const badgeColor = badgeColorMap[plan.color] || "bg-gray-500";
 
   return (
-    <div className="w-80 flex-shrink-0 fade-in-section">
+    <div className="w-72 sm:w-80 flex-shrink-0 fade-in-section">
       <div
         className={`relative flex flex-col bg-white rounded-2xl shadow-lg h-full transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 border-b-8 ${
           plan.badge ? borderColor : "border-gray-200"
@@ -71,7 +71,7 @@ const PriceCard: React.FC<{
             ) : (
               <div className="text-center my-6 min-h-[90px]">
                 <div>
-                  <span className="text-4xl font-extrabold">
+                  <span className="text-3xl sm:text-4xl font-extrabold">
                     Rp {priceInfo.price}
                   </span>
                   <span className="text-gray-500">/bln</span>
