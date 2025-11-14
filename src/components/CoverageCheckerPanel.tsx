@@ -61,11 +61,38 @@ const CoverageCheckerPanel: React.FC<CoverageCheckerPanelProps> = ({
             5
           )}, Lng: ${selectedPosition.lng.toFixed(5)}`;
           try {
-            const geoResponse = await fetch(
-              `/api/geocode?lat=${selectedPosition.lat}&lon=${selectedPosition.lng}`
+            const reverseUrl = new URL(
+              "https://nominatim.openstreetmap.org/reverse"
             );
+            reverseUrl.searchParams.set("format", "jsonv2");
+            reverseUrl.searchParams.set("lat", selectedPosition.lat.toString());
+            reverseUrl.searchParams.set("lon", selectedPosition.lng.toString());
+            reverseUrl.searchParams.set("addressdetails", "1");
+
+            const geoResponse = await fetch(reverseUrl.toString(), {
+              headers: {
+                "Accept-Language": "id",
+              },
+            });
+
             if (geoResponse.ok) {
-              const geoData = await geoResponse.json();
+              const geoData: {
+                address?: {
+                  road?: string;
+                  street?: string;
+                  village?: string;
+                  suburb?: string;
+                  city_district?: string;
+                  subdistrict?: string;
+                  city?: string;
+                  town?: string;
+                  county?: string;
+                  state?: string;
+                  postcode?: string;
+                };
+                display_name?: string;
+              } = await geoResponse.json();
+
               if (geoData && geoData.address) {
                 const addr = geoData.address;
                 const addressParts = [
@@ -78,14 +105,22 @@ const CoverageCheckerPanel: React.FC<CoverageCheckerPanelProps> = ({
                 ].filter(Boolean);
                 if (addressParts.length > 0) {
                   address = addressParts.join(", ");
-                } else {
-                  address = geoData.displayName || address;
+                } else if (geoData.display_name) {
+                  address = geoData.display_name;
                 }
+              } else if (geoData.display_name) {
+                address = geoData.display_name;
               }
+            } else {
+              console.warn(
+                "Reverse geocoding failed",
+                geoResponse.status,
+                await geoResponse.text()
+              );
             }
           } catch (geoErr) {
             console.warn(
-              "Could not fetch address from backend, continuing.",
+              "Could not fetch address from Nominatim, continuing.",
               geoErr
             );
           }

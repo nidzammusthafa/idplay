@@ -42,27 +42,44 @@ const SearchBox: React.FC<SearchBoxProps> = ({ onLocationSelect, onError }) => {
 
     setIsLoading(true);
     try {
-      const response = await fetch(
-        `/api/search?q=${encodeURIComponent(searchQuery)}`
+      const searchUrl = new URL(
+        "https://nominatim.openstreetmap.org/search?format=json"
       );
-      const data = await response.json();
+      searchUrl.searchParams.set("q", searchQuery);
+      searchUrl.searchParams.set("limit", "1");
+      searchUrl.searchParams.set("addressdetails", "1");
+
+      const response = await fetch(searchUrl.toString(), {
+        headers: {
+          "Accept-Language": "id",
+        },
+      });
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to fetch search results");
+        const errorText = await response.text();
+        throw new Error(
+          `Nominatim gagal merespons: ${response.status} ${errorText}`
+        );
       }
 
-      // For now, we'll just use the first result
-      // In a more advanced implementation, we could show suggestions
-      if (data.lat && data.lon) {
-        onLocationSelect({
-          lat: data.lat,
-          lng: data.lon,
-        } as LatLng);
-        setQuery("");
-        setShowSuggestions(false);
-      } else {
+      const data: Array<{
+        lat: string;
+        lon: string;
+        display_name?: string;
+      }> = await response.json();
+
+      if (data.length === 0) {
         onError("Lokasi tidak ditemukan");
+        return;
       }
+
+      const { lat, lon, display_name } = data[0];
+      onLocationSelect({
+        lat: parseFloat(lat),
+        lng: parseFloat(lon),
+      } as LatLng);
+      setQuery(display_name ?? "");
+      setShowSuggestions(false);
     } catch (error) {
       console.error("Search error:", error);
       onError(
