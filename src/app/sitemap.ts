@@ -1,5 +1,4 @@
 import { PACKAGE_PLANS } from "@/lib/constants";
-import { PROMO_PACKAGE_PLANS } from "@/lib/promo-constants";
 import { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -24,12 +23,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: new Date(),
       changeFrequency: "monthly" as const,
       priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/promo`,
-      lastModified: new Date(),
-      changeFrequency: "weekly" as const,
-      priority: 0.85,
     },
   ];
 
@@ -59,31 +52,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     return routes;
   });
 
-  // Dynamic promo package pages
-  const periodMap: { [key: string]: string } = {
-    sixMonths: "6-bulan",
-    twelveMonths: "12-bulan",
-  };
-
-  const promoRoutes = PROMO_PACKAGE_PLANS.flatMap((plan) => {
-    const routes: MetadataRoute.Sitemap = [];
-
-    (Object.keys(plan.prices) as Array<keyof typeof plan.prices>).forEach(
-      (periodKey) => {
-        if (plan.prices[periodKey] && plan.prices[periodKey].price !== "-") {
-          const slug = `${plan.speed}-mbps-${periodMap[periodKey]}`;
-          routes.push({
-            url: `${baseUrl}/promo/${slug}`,
-            lastModified: new Date(),
-            changeFrequency: "weekly" as const,
-            priority: 0.75,
-          });
-        }
-      }
-    );
-
-    return routes;
-  });
-
-  return [...staticRoutes, ...packageRoutes, ...promoRoutes];
+  return [...staticRoutes, ...packageRoutes];
 }
