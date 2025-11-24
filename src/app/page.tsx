@@ -9,7 +9,6 @@ import InstallationProcess from "@/components/InstallationProcess";
 import Pricing from "@/components/Pricing";
 import Services from "@/components/Services";
 import Testimonials from "@/components/Testimonials";
-import PromoToast from "@/components/PromoToast";
 import { useEffect } from "react";
 
 export default function Home() {
@@ -51,7 +50,6 @@ export default function Home() {
         <Contact />
       </main>
       <Footer />
-      <PromoToast />
     </div>
   );
 }
